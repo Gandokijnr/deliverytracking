@@ -5,7 +5,7 @@
 Creates the full database schema for a valuable-asset secure logistics and shipment tracking platform.
 Administrators create and manage shipments; customers track them publicly by tracking number and contact support without registering.
 
-## New Tables
+# New Tables
 
 1. **shipments** — Master shipment records for valuable assets.
    - tracking_number: unique 17-char alphanumeric public reference.
