@@ -162,7 +162,7 @@ DROP POLICY IF EXISTS "admin_delete_checkpoints" ON shipment_checkpoints;
 CREATE POLICY "admin_delete_checkpoints" ON shipment_checkpoints FOR DELETE
   TO authenticated USING (true);
 
--- ============ SHIPMENT SIMULATIONS ============
+-- ============ SHIPMENT SIMULATIONS ===========
 CREATE TABLE IF NOT EXISTS shipment_simulations (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   shipment_id uuid NOT NULL UNIQUE REFERENCES shipments(id) ON DELETE CASCADE,
