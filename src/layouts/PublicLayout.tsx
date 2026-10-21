@@ -130,7 +130,6 @@ export default function PublicLayout() {
                 <li><Link to="/about" className="hover:text-[#c9a227] transition-colors">About Us</Link></li>
                 <li><Link to="/track" className="hover:text-[#c9a227] transition-colors">Track Shipment</Link></li>
                 <li><Link to="/support" className="hover:text-[#c9a227] transition-colors">Contact Support</Link></li>
-                <li><Link to="/auth" className="hover:text-[#c9a227] transition-colors">Administrator Login</Link></li>
               </ul>
             </div>
 
@@ -150,9 +149,6 @@ export default function PublicLayout() {
           <div className="border-t border-white/10 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-xs text-slate-500">
               © {new Date().getFullYear()} MeridianVault Secure Logistics. All rights reserved.
-            </p>
-            <p className="text-xs text-slate-500">
-              Illustrative route data is not live GPS tracking. Verified events appear in checkpoint history.
             </p>
           </div>
         </div>
