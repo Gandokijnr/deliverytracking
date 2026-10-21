@@ -286,7 +286,6 @@ export default function Track() {
                 Shipment Progress
               </h3>
 
-              <p className="text-xs text-amber-700 mb-4">Simulated map position set by the administrator. Updates automatically every 15 seconds. Not live GPS.</p>
               <div className="mb-6">                <RouteMap
                   originLat={shipment.origin_lat}
                   originLng={shipment.origin_lng}
