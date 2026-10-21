@@ -38,6 +38,10 @@ export default function RouteMap({ originLng, destinationLng, progress, originLa
         {[{ ...start, label: 'ORIGIN', fill: '#e5bd48' }, { ...end, label: 'DESTINATION', fill: level === 100 ? '#34d399' : '#64748b' }].map(p => <g key={p.label}><circle cx={p.x} cy={p.y} r="10" fill={p.fill} stroke="#fff" strokeWidth="3" /><text x={p.x} y={p.y + 35} textAnchor="middle" fill="#e2e8f0" fontSize="12">{p.label}</text></g>)}
         <g transform={`translate(${current.x} ${current.y})`}>
           <circle r="22" fill="#e5bd48" opacity="0.15" />
+          <g aria-hidden="true" pointerEvents="none">
+            <circle className="route-position-pulse" r="14" fill="none" stroke="#e5bd48" strokeWidth="2" />
+            <circle className="route-position-pulse route-position-pulse-delayed" r="14" fill="none" stroke="#e5bd48" strokeWidth="2" />
+          </g>
           <circle r="12" fill="#e5bd48" stroke="white" strokeWidth="3" />
           <path d="M -4 -4 L 4 -4 L 4 4 L -4 4 Z M -4 -1 L 4 -1" fill="none" stroke="#0c1a33" strokeWidth="1.5" />
         </g>
