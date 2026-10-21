@@ -25,6 +25,7 @@ export default function AdminShipmentDetail() {
   const [simProgress, setSimProgress] = useState(0);
   const [simPlaying, setSimPlaying] = useState(false);
   const [simSaving, setSimSaving] = useState(false);
+  const [simMessage, setSimMessage] = useState('');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -34,7 +35,9 @@ export default function AdminShipmentDetail() {
     const { data: cps } = await supabase.from('shipment_checkpoints').select('*').eq('shipment_id', id).order('checkpoint_date', { ascending: false });
     setCheckpoints((cps || []) as ShipmentCheckpoint[]);
     const { data: sim } = await supabase.from('shipment_simulations').select('*').eq('shipment_id', id).maybeSingle();
-    if (sim) { setSimulation(sim as ShipmentSimulation); setSimProgress((sim as ShipmentSimulation).progress); setSimPlaying((sim as ShipmentSimulation).is_playing); }
+    setSimulation(sim as ShipmentSimulation | null);
+    setSimProgress(sim?.progress ?? 0);
+    setSimPlaying(false);
     setLoading(false);
   }, [id]);
 
@@ -47,9 +50,17 @@ export default function AdminShipmentDetail() {
 
   useEffect(() => {
     if (!simPlaying) return;
-    const interval = setInterval(() => { setSimProgress((prev) => { if (prev >= 100) { setSimPlaying(false); return 100; } return Math.min(100, prev + 0.5); }); }, 200);
+    const interval = setInterval(() => { setSimProgress(prev => Math.min(100, prev + 0.5)); }, 200);
     return () => clearInterval(interval);
   }, [simPlaying]);
+
+  useEffect(() => { if (simProgress >= 100) setSimPlaying(false); }, [simProgress]);
+
+  const adjustProgress = (value: number) => {
+    setSimPlaying(false);
+    setSimProgress(Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0)));
+    setSimMessage('');
+  };
 
   const handleSaveEdit = async () => { setSaving(true); setError(null); try { const { error: updateError } = await supabase.from('shipments').update(editForm).eq('id', id); if (updateError) throw updateError; setShipment(editForm as Shipment); setEditing(false); } catch { setError('Failed to save changes.'); } finally { setSaving(false); } };
 
@@ -68,10 +79,15 @@ export default function AdminShipmentDetail() {
 
   const handleSaveSimulation = async () => {
     setSimSaving(true);
+    setSimPlaying(false);
+    setSimMessage('');
+    const progress = Math.max(0, Math.min(100, simProgress));
     try {
-      if (simulation) { await supabase.from('shipment_simulations').update({ progress: simProgress, is_playing: simPlaying, simulated_time: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', simulation.id); }
-      else { await supabase.from('shipment_simulations').insert({ shipment_id: id, progress: simProgress, is_playing: simPlaying, simulated_time: new Date().toISOString() }); }
-    } catch { setError('Failed to save simulation.'); } finally { setSimSaving(false); }
+      const { data, error: saveError } = await supabase.from('shipment_simulations').upsert({ shipment_id: id, progress, is_playing: false, simulated_time: new Date().toISOString(), updated_at: new Date().toISOString() }, { onConflict: 'shipment_id' }).select().single();
+      if (saveError) throw saveError;
+      setSimulation(data as ShipmentSimulation);
+      setSimMessage(`Saved ${Math.round(progress)}%. Customers will see this position when they load tracking.`);
+    } catch { setSimMessage('Failed to save progress. Please try again.'); } finally { setSimSaving(false); }
   };
 
   const handleArchive = async () => { await supabase.from('shipments').update({ archived_at: new Date().toISOString() }).eq('id', id); navigate({ to: '/admin/shipments' }); };
@@ -80,8 +96,6 @@ export default function AdminShipmentDetail() {
   if (loading) return <div className="flex items-center justify-center py-20"><div className="w-10 h-10 border-[3px] border-[#c9a227] border-t-transparent rounded-full animate-spin" /></div>;
   if (!shipment) return <div className="text-center py-20"><AlertCircle className="w-10 h-10 text-red-400 mx-auto mb-2" /><p className="text-slate-500">{error}</p></div>;
 
-  const canShowMap = shipment.origin_lat && shipment.origin_lng && shipment.destination_lat && shipment.destination_lng;
-  const currentStatusIndex = ALL_STATUSES.indexOf(shipment.current_status);
 
   return (
     <div className="space-y-6">
@@ -127,8 +141,8 @@ export default function AdminShipmentDetail() {
             <div className="card p-5"><h3 className="font-bold text-[#0c1a33] mb-4 flex items-center gap-2"><Truck className="w-5 h-5 text-[#c9a227]" /> Shipping Info</h3><div className="space-y-2 text-sm"><InfoRow label="Origin" value={`${shipment.origin_city}, ${shipment.origin_country}`} /><InfoRow label="Collection Address" value={shipment.origin_address} /><InfoRow label="Destination" value={`${shipment.destination_city}, ${shipment.destination_country}`} /><InfoRow label="Delivery Address" value={shipment.destination_address} /><InfoRow label="Dispatch Date" value={formatDate(shipment.dispatch_date)} /><InfoRow label="Est. Delivery" value={formatDate(shipment.estimated_delivery_date)} /></div></div>
           </div>
 
-          {canShowMap && (
-            <div className="card p-6"><h3 className="font-bold text-[#0c1a33] mb-1 flex items-center gap-2"><MapPin className="w-5 h-5 text-[#c9a227]" /> Route Simulation Controls</h3><p className="text-xs text-amber-700 mb-4">Illustrative only — does not create checkpoints or change shipment status.</p><RouteMap originLat={shipment.origin_lat!} originLng={shipment.origin_lng!} destinationLat={shipment.destination_lat!} destinationLng={shipment.destination_lng!} progress={simProgress} originLabel={`${shipment.origin_city}, ${shipment.origin_country}`} destinationLabel={`${shipment.destination_city}, ${shipment.destination_country}`} isPlaying={simPlaying} /><div className="mt-4 space-y-3"><div><label className="block text-sm font-medium text-[#0c1a33] mb-2">Position: {Math.round(simProgress)}%</label><input type="range" min={0} max={100} step={1} value={simProgress} onChange={(e) => setSimProgress(parseFloat(e.target.value))} className="w-full accent-[#c9a227]" /></div><div className="flex flex-wrap gap-2"><button onClick={() => setSimPlaying(!simPlaying)} className={simPlaying ? 'btn-ghost border border-slate-300' : 'btn-navy !py-2'}>{simPlaying ? <><Pause className="w-4 h-4" /> Pause</> : <><Play className="w-4 h-4" /> Play</>}</button><button onClick={() => { setSimProgress(0); setSimPlaying(false); }} className="btn-ghost border border-slate-300 !py-2"><RotateCcw className="w-4 h-4" /> Reset</button><button onClick={handleSaveSimulation} disabled={simSaving} className="btn-primary !py-2">{simSaving ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Saving...</> : <><Save className="w-4 h-4" /> Save Position</>}</button></div></div></div>
+          {(
+            <div className="card p-6"><h3 className="font-bold text-[#0c1a33] mb-1 flex items-center gap-2"><MapPin className="w-5 h-5 text-[#c9a227]" /> Simulated Shipment Progress</h3><p className="text-xs text-amber-700 mb-4">Adjust the route preview, then save to publish the position. This simulation does not change verified checkpoints or shipment status.</p><RouteMap originLat={shipment.origin_lat!} originLng={shipment.origin_lng!} destinationLat={shipment.destination_lat!} destinationLng={shipment.destination_lng!} progress={simProgress} originLabel={`${shipment.origin_city}, ${shipment.origin_country}`} destinationLabel={`${shipment.destination_city}, ${shipment.destination_country}`} isPlaying={simPlaying} /><div className="mt-4 space-y-3"><div className="flex flex-wrap items-center justify-between gap-3"><div><label htmlFor="simulation-percent" className="block text-sm font-medium mb-1">Progress level (%)</label><input id="simulation-percent" type="number" min={0} max={100} step={1} value={Math.round(simProgress)} disabled={simSaving} onChange={e => adjustProgress(Number(e.target.value))} className="input-field !w-28" /></div><span className="text-sm text-slate-500">{Math.abs(simProgress - (simulation?.progress ?? 0)) > 0.01 ? 'Unsaved changes' : 'Position matches saved progress'}</span></div><div className="flex flex-wrap gap-2">{[0, 25, 50, 75, 100].map(value => <button key={value} disabled={simSaving} onClick={() => adjustProgress(value)} aria-pressed={Math.round(simProgress) === value} className={Math.round(simProgress) === value ? 'btn-navy !py-2' : 'btn-ghost border border-slate-300 !py-2'}>{value}%</button>)}</div>{simMessage && <p role="status" className="rounded-lg bg-slate-100 p-3 text-sm text-slate-700">{simMessage}</p>}<div><label className="block text-sm font-medium text-[#0c1a33] mb-2">Position: {Math.round(simProgress)}%</label><input type="range" min={0} max={100} step={1} value={simProgress} onChange={(e) => adjustProgress(Number(e.target.value))} aria-label="Simulated progress percentage" disabled={simSaving} className="w-full accent-[#c9a227]" /></div><div className="flex flex-wrap gap-2"><button disabled={simSaving || simProgress >= 100} onClick={() => { setSimMessage(''); setSimPlaying(!simPlaying); }} className={simPlaying ? 'btn-ghost border border-slate-300' : 'btn-navy !py-2'}>{simPlaying ? <><Pause className="w-4 h-4" /> Pause</> : <><Play className="w-4 h-4" /> Preview</>}</button><button disabled={simSaving} onClick={() => adjustProgress(0)} className="btn-ghost border border-slate-300 !py-2"><RotateCcw className="w-4 h-4" /> Reset</button><button onClick={handleSaveSimulation} disabled={simSaving} className="btn-primary !py-2">{simSaving ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Saving...</> : <><Save className="w-4 h-4" /> Save Progress</>}</button></div></div></div>
           )}
 
           <div className="card p-6"><h3 className="font-bold text-[#0c1a33] mb-4 flex items-center gap-2"><Plus className="w-5 h-5 text-[#c9a227]" /> Add Shipment Update</h3><form onSubmit={handleAddCheckpoint} className="space-y-4"><div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><div><label className="block text-sm font-medium text-[#0c1a33] mb-1.5">Status *</label><select required value={cpForm.status} onChange={(e) => setCpForm({ ...cpForm, status: e.target.value })} className="input-field"><option value="">Select status...</option>{ALL_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}</select></div><div><label className="block text-sm font-medium text-[#0c1a33] mb-1.5">Checkpoint Location</label><input value={cpForm.location} onChange={(e) => setCpForm({ ...cpForm, location: e.target.value })} className="input-field" placeholder="e.g. Frankfurt, Germany" /></div></div><div><label className="block text-sm font-medium text-[#0c1a33] mb-1.5">Description (Public)</label><textarea value={cpForm.description} onChange={(e) => setCpForm({ ...cpForm, description: e.target.value })} className="input-field min-h-[60px] resize-y" placeholder="Description shown on the public tracking timeline" /></div><div><label className="block text-sm font-medium text-[#0c1a33] mb-1.5">Internal Note (Private)</label><textarea value={cpForm.internal_note} onChange={(e) => setCpForm({ ...cpForm, internal_note: e.target.value })} className="input-field min-h-[40px] resize-y" placeholder="Internal note — never shown publicly" /></div><label className="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={cpForm.update_shipment_status} onChange={(e) => setCpForm({ ...cpForm, update_shipment_status: e.target.checked })} className="w-4 h-4 accent-[#c9a227]" /> Update shipment's current status to match this checkpoint</label><button type="submit" disabled={addingCp} className="btn-navy">{addingCp ? <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Adding...</> : <><Plus className="w-5 h-5" /> Add Checkpoint</>}</button></form></div>

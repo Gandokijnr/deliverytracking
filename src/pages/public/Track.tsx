@@ -78,7 +78,7 @@ export default function Track() {
     }
   };
 
-  const currentStatusIndex = shipment ? ALL_STATUSES.indexOf(shipment.current_status) : -1;
+  const currentStatusIndex = shipment ? (ALL_STATUSES as readonly string[]).indexOf(shipment.current_status) : -1;
   const isDelivered = shipment?.current_status === 'Delivered';
   const isException = shipment && (EXCEPTION_STATUSES as readonly string[]).includes(shipment.current_status);
 
@@ -301,7 +301,7 @@ export default function Track() {
             </div>
 
             {/* Route Map */}
-            {shipment.origin_lat && shipment.origin_lng && shipment.destination_lat && shipment.destination_lng && (
+            {(
               <div className="card p-6 lg:p-8">
                 <h3 className="text-lg font-bold text-[#0c1a33] mb-1 flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-[#c9a227]" />
@@ -319,7 +319,7 @@ export default function Track() {
                   progress={simulation?.progress || 0}
                   originLabel={`${shipment.origin_city}, ${shipment.origin_country}`}
                   destinationLabel={`${shipment.destination_city}, ${shipment.destination_country}`}
-                  isPlaying={simulation?.is_playing}
+                  isPlaying={false}
                 />
               </div>
             )}
