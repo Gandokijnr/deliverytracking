@@ -36,7 +36,6 @@ export default function RouteMap({ originLng, destinationLng, progress, originLa
       <svg viewBox="0 0 800 330" role="img" aria-label={`Simulated route from ${originLabel} to ${destinationLabel}, ${Math.round(level)} percent complete`} className="block min-h-[220px] w-full">
         <defs><pattern id={gridId} width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff" strokeOpacity="0.05" /></pattern></defs>
         <rect width="800" height="330" fill={`url(#${gridId})`} />
-        <text x="400" y="35" textAnchor="middle" fill="#94a3b8" fontSize="12" letterSpacing="3">ILLUSTRATIVE ROUTE DIAGRAM</text>
         <path d={`M ${start.x} ${start.y} Q 400 50 ${end.x} ${end.y}`} fill="none" stroke="#64748b" strokeWidth="4" strokeDasharray="8 8" />
         <path d={`M ${start.x} ${start.y} Q ${control.x} ${control.y} ${current.x} ${current.y}`} fill="none" stroke="#e5bd48" strokeWidth="6" strokeLinecap="round" />
         {[0.25, 0.5, 0.75].map(p => { const pos = point(p); return <g key={p}><circle cx={pos.x} cy={pos.y} r="5" fill={t >= p ? '#e5bd48' : '#475569'} /><text x={pos.x} y={pos.y + 27} textAnchor="middle" fill="#94a3b8" fontSize="12">{p * 100}%</text></g>; })}
