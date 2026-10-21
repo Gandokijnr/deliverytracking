@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@theme {
+  --color-navy-50: #f0f4f9;
+  --color-navy-100: #d9e2ef;
+  --color-navy-200: #b3c5df;
+  --color-navy-300: #7d9ec8;
+  --color-navy-400: #496ca8;
+  --color-navy-500: #2b4f8a;
+  --color-navy-600: #1e3a6f;
+  --color-navy-700: #162d57;
+  --color-navy-800: #112342;
+  --color-navy-900: #0c1a33;
+  --color-navy-950: #070f1f;
+
+  --color-gold-50: #fdfbf3;
+  --color-gold-100: #f9f0d4;
+  --color-gold-200: #f2dfa0;
+  --color-gold-300: #e9c96b;
+  --color-gold-400: #dab040;
+  --color-gold-500: #c9a227;
+  --color-gold-600: #a87f1c;
+  --color-gold-700: #856018;
+  --color-gold-800: #6b4d18;
+  --color-gold-900: #5a4019;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.6;
+    color: #0c1a33;
+    background-color: #f8fafc;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#c9a227] text-white font-semibold rounded-lg transition-all duration-200 hover:bg-[#a87f1c] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-navy {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#112342] text-white font-semibold rounded-lg transition-all duration-200 hover:bg-[#1e3a6f] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-white/30 text-white font-semibold rounded-lg transition-all duration-200 hover:bg-white/10 hover:border-white/50 active:scale-[0.98];
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-[#112342] rounded-lg transition-all duration-200 hover:bg-slate-100;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-[#0c1a33] placeholder-slate-400 transition-all duration-200 focus:outline-none focus:border-[#c9a227] focus:ring-2 focus:ring-[#c9a227]/20;
+  }
+
+  .card {
+    @apply bg-white rounded-xl border border-slate-200 shadow-sm;
+  }
+
+  .section-padding {
+    @apply px-4 sm:px-6 lg:px-8 py-16 lg:py-24;
+  }
+
+  .container-mx {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .gold-divider {
+    @apply w-16 h-1 bg-[#c9a227] rounded-full;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
