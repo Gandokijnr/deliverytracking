@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearch, useNavigate, Link } from '@tanstack/react-router';
-import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase';
+import { supabase, SUPABASE_URL } from '@/lib/supabase';
 import type { PublicShipment, PublicCheckpoint } from '@/lib/types';
 import {
   Search, Package, MapPin, Calendar, Clock, AlertCircle, ArrowRight,
@@ -31,14 +31,14 @@ export default function Track() {
     setCheckpoints([]);
     setSimulation(null);
     try {
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/public-portal?tracking=${encodeURIComponent(trackingNum)}`, {
-        headers: {
-          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      // This endpoint is public (verify_jwt = false). A plain GET also avoids
+      // a CORS preflight that can hide deployment errors from the browser.
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/public-portal?tracking=${encodeURIComponent(trackingNum.trim().toUpperCase())}`);
+      const data = await response.json();
       if (!response.ok) {
-        if (response.status === 404) {
+        if (data?.code === 'NOT_FOUND') {
+          setError('Public tracking is not configured yet. Please contact support so the tracking service can be deployed.');
+        } else if (response.status === 404) {
           setError('No shipment found with that tracking number. Please check and try again.');
         } else {
           setError('Unable to retrieve shipment information. Please try again later.');
@@ -46,7 +46,6 @@ export default function Track() {
         setSearched(true);
         return;
       }
-      const data = await response.json();
       if (!data || !data.tracking_number) {
         setError('No shipment found with that tracking number.');
         setSearched(true);
@@ -62,7 +61,7 @@ export default function Track() {
     } finally {
       setLoading(false);
     }
-  }, [SUPABASE_URL, SUPABASE_ANON_KEY]);
+  }, []);
 
   useEffect(() => {
     if (search.t) {
@@ -120,7 +119,7 @@ export default function Track() {
             <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="w-7 h-7 text-red-500" />
             </div>
-            <h3 className="text-lg font-bold text-[#0c1a33] mb-2">Shipment Not Found</h3>
+            <h3 className="text-lg font-bold text-[#0c1a33] mb-2">Unable to Display Tracking</h3>
             <p className="text-slate-600 mb-6">{error}</p>
             <div className="flex flex-wrap gap-3 justify-center">
               <Link to="/support" className="btn-ghost border border-slate-300">
