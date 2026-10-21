@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { Info, Navigation } from 'lucide-react';
+import { Navigation } from 'lucide-react';
 
 interface RouteMapProps {
   originLat: number | null;
@@ -12,7 +12,7 @@ interface RouteMapProps {
   isPlaying?: boolean;
 }
 
-export default function RouteMap({ originLng, destinationLng, progress, originLabel, destinationLabel, isPlaying }: RouteMapProps) {
+export default function RouteMap({ originLng, destinationLng, progress, originLabel, destinationLabel }: RouteMapProps) {
   const gridId = useId().replace(/:/g, '');
   const level = Number.isFinite(progress) ? Math.max(0, Math.min(100, progress)) : 0;
   const t = level / 100;
@@ -29,7 +29,7 @@ export default function RouteMap({ originLng, destinationLng, progress, originLa
 
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-[#0c1a33] text-white">
-      <svg viewBox="0 0 800 330" role="img" aria-label={`Simulated route from ${originLabel} to ${destinationLabel}: ${phase}`} className="block min-h-[220px] w-full">
+      <svg viewBox="0 0 800 330" role="img" aria-label={`Route progress from ${originLabel} to ${destinationLabel}: ${phase}`} className="block min-h-[220px] w-full">
         <defs><pattern id={gridId} width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff" strokeOpacity="0.05" /></pattern></defs>
         <rect width="800" height="330" fill={`url(#${gridId})`} />
         <path d={`M ${start.x} ${start.y} Q 400 50 ${end.x} ${end.y}`} fill="none" stroke="#64748b" strokeWidth="4" strokeDasharray="8 8" />

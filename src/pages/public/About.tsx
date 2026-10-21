@@ -78,7 +78,7 @@ export default function About() {
                 {[
                   'We do not fabricate shipment movement, customs clearance, or delivery events',
                   'We do not falsely claim insurance coverage, regulatory licenses, or physical delivery guarantees',
-                  'We do not present simulated map positions as independently verified shipment movement',
+                  'Map positions are illustrative; confirmed movement appears in checkpoint history',
                   'We do not bypass customs, anti-money-laundering, sanctions, or import/export requirements',
                   'We do not expose sensitive valuable asset information publicly',
                 ].map((item, i) => (

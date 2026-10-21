@@ -264,7 +264,7 @@ export default function Home() {
             <div className="gold-divider mb-4" />
             <h2 className="text-3xl lg:text-4xl font-bold mb-6">Our Security & Handling Approach</h2>
             <p className="text-slate-300 mb-8 leading-relaxed text-lg">
-              We maintain a structured operational framework that separates verified operational events from illustrative tracking, ensuring transparency about what is confirmed and what is simulated.
+              We maintain a structured operational framework that separates verified operational events from illustrative tracking, ensuring transparency about confirmed events and illustrative route progress.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
