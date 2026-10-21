@@ -5,7 +5,7 @@ import type { Shipment } from '@/lib/types';
 import { Package, Plus, Search, Archive, RotateCcw, Trash2, Eye } from 'lucide-react';
 import { formatDate, getStatusColor, classNames } from '@/lib/tracking';
 
-export default function AdminShipments() {
+export default function AdminShipments({ progressMode = false }: { progressMode?: boolean }) {
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -37,7 +37,7 @@ export default function AdminShipments() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div><h2 className="text-2xl font-bold text-[#0c1a33]">Shipment Management</h2><p className="text-sm text-slate-500 mt-1">Create, edit, and manage all valuable asset shipments</p></div>
+        <div><h2 className="text-2xl font-bold text-[#0c1a33]">{progressMode ? 'Shipment Progress' : 'Shipment Management'}</h2><p className="text-sm text-slate-500 mt-1">{progressMode ? 'Select a shipment to adjust its map progress, then Save Progress to publish it for customers.' : 'Create, edit, and manage all valuable asset shipments'}</p></div>
         <Link to="/admin/shipments/new" className="btn-navy !py-2.5"><Plus className="w-4 h-4" /> Create New Shipment</Link>
       </div>
 
@@ -62,7 +62,7 @@ export default function AdminShipments() {
                     <td className="px-4 py-3"><span className={classNames('px-2 py-0.5 rounded-full text-xs font-semibold border', getStatusColor(s.current_status))}>{s.current_status}</span></td>
                     <td className="px-4 py-3 text-xs text-slate-500">{formatDate(s.estimated_delivery_date)}</td>
                     <td className="px-4 py-3"><div className="flex items-center justify-end gap-1">
-                      <Link to="/admin/shipments/$id" params={{ id: s.id }} className="p-2 rounded-lg hover:bg-slate-100 text-slate-600" title="View / Edit"><Eye className="w-4 h-4" /></Link>
+                      <Link to="/admin/shipments/$id" params={{ id: s.id }} className="p-2 rounded-lg hover:bg-slate-100 text-slate-600" title="View / Edit"><Eye className="w-4 h-4" /><span className="text-xs whitespace-nowrap">Adjust Progress</span></Link>
                       {!s.archived_at ? (<button onClick={() => handleArchive(s.id)} className="p-2 rounded-lg hover:bg-amber-50 text-amber-600" title="Archive"><Archive className="w-4 h-4" /></button>) : (<><button onClick={() => handleRestore(s.id)} className="p-2 rounded-lg hover:bg-emerald-50 text-emerald-600" title="Restore"><RotateCcw className="w-4 h-4" /></button><button onClick={() => setConfirmDelete(s.id)} className="p-2 rounded-lg hover:bg-red-50 text-red-600" title="Delete permanently"><Trash2 className="w-4 h-4" /></button></>)}
                     </div></td>
                   </tr>

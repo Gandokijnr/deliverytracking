@@ -70,6 +70,35 @@ export default function Track() {
     }
   }, [search.t, fetchShipment]);
 
+  const activeTracking = shipment?.tracking_number;
+  useEffect(() => {
+    if (!activeTracking) return;
+    const controller = new AbortController();
+    let pending = false;
+    const refresh = async () => {
+      if (pending || document.hidden) return;
+      pending = true;
+      try {
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/public-portal?tracking=${encodeURIComponent(activeTracking)}`, { signal: controller.signal, cache: 'no-store' });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (controller.signal.aborted || data.tracking_number !== activeTracking) return;
+        setShipment(data as PublicShipment);
+        setCheckpoints(data.checkpoints || []);
+        setSimulation(data.simulation || null);
+      } catch {
+        // Keep the last loaded position during a temporary connection failure.
+      } finally { pending = false; }
+    };
+    const interval = window.setInterval(refresh, 15000);
+    window.addEventListener('focus', refresh);
+    return () => {
+      controller.abort();
+      window.clearInterval(interval);
+      window.removeEventListener('focus', refresh);
+    };
+  }, [activeTracking]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (trackingNumber.trim()) {
@@ -257,6 +286,18 @@ export default function Track() {
                 Shipment Progress
               </h3>
 
+              <p className="text-xs text-amber-700 mb-4">Simulated map position set by the administrator. Updates automatically every 15 seconds. Not live GPS.</p>
+              <div className="mb-6">                <RouteMap
+                  originLat={shipment.origin_lat}
+                  originLng={shipment.origin_lng}
+                  destinationLat={shipment.destination_lat}
+                  destinationLng={shipment.destination_lng}
+                  progress={simulation?.progress || 0}
+                  originLabel={`${shipment.origin_city}, ${shipment.origin_country}`}
+                  destinationLabel={`${shipment.destination_city}, ${shipment.destination_country}`}
+                  isPlaying={false}
+                /></div>
+              <h4 className="font-semibold text-[#0c1a33] mb-4">Verified shipment status</h4>
               {isException ? (
                 <div className={`p-4 rounded-lg border ${getStatusColor(shipment.current_status)}`}>
                   <p className="font-semibold">{shipment.current_status}</p>
@@ -299,30 +340,6 @@ export default function Track() {
                 </div>
               )}
             </div>
-
-            {/* Route Map */}
-            {(
-              <div className="card p-6 lg:p-8">
-                <h3 className="text-lg font-bold text-[#0c1a33] mb-1 flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-[#c9a227]" />
-                  Shipment Route Map
-                </h3>
-                <p className="text-xs text-amber-700 mb-4 flex items-center gap-1.5">
-                  <Info className="w-3.5 h-3.5" />
-                  Illustrative Route Progress — Not Live GPS. Verified events appear in the checkpoint history below.
-                </p>
-                <RouteMap
-                  originLat={shipment.origin_lat}
-                  originLng={shipment.origin_lng}
-                  destinationLat={shipment.destination_lat}
-                  destinationLng={shipment.destination_lng}
-                  progress={simulation?.progress || 0}
-                  originLabel={`${shipment.origin_city}, ${shipment.origin_country}`}
-                  destinationLabel={`${shipment.destination_city}, ${shipment.destination_country}`}
-                  isPlaying={false}
-                />
-              </div>
-            )}
 
             {/* Checkpoint History */}
             <div className="card p-6 lg:p-8">

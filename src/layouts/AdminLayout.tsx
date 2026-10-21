@@ -7,6 +7,7 @@ import { classNames } from '@/lib/tracking';
 const adminNav = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/shipments', label: 'Shipments', icon: Package },
+  { to: '/admin/shipment-progress', label: 'Shipment Progress', icon: Package },
   { to: '/admin/support', label: 'Support', icon: MessageSquare },
 ];
 

@@ -87,6 +87,12 @@ const adminShipmentsRoute = createRoute({
   component: () => <Suspense fallback={<Loading />}><AdminShipments /></Suspense>,
 });
 
+const adminProgressRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: '/admin/shipment-progress',
+  component: () => <Suspense fallback={<Loading />}><AdminShipments progressMode /></Suspense>,
+});
+
 const adminShipmentNewRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: '/admin/shipments/new',
@@ -117,6 +123,7 @@ const routeTree = rootRoute.addChildren([
   adminRoute.addChildren([
     adminDashboardRoute,
     adminShipmentsRoute,
+    adminProgressRoute,
     adminShipmentNewRoute,
     adminShipmentDetailRoute,
     adminSupportRoute,
